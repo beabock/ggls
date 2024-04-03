@@ -25,6 +25,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/Introduction.html">Introduction</a>
+    <a class="dropdown-item" href="../articles/comparison_maker.html">comparison_maker</a>
     <a class="dropdown-item" href="../articles/test_assumptions_vignette.html">test_assumptions_vignette</a>
   </div>
 </li>
@@ -49,7 +50,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">test_assumptions</span><span class="op">(</span><span class="va">data</span>, <span class="va">x</span>, <span class="va">y</span>, groups <span class="op">=</span> <span class="cn">NULL</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, plots <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">test_assumptions</span><span class="op">(</span><span class="va">data</span>, <span class="va">x</span>, <span class="va">y</span>, groups <span class="op">=</span> <span class="cn">NULL</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, plots <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -87,7 +88,7 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">test_assumptions</span><span class="op">(</span><span class="va">ToothGrowth</span>, <span class="va">supp</span>, <span class="va">len</span>, <span class="va">dose</span>, alpha <span class="op">=</span> <span class="fl">0.01</span>,plots <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">test_assumptions</span><span class="op">(</span><span class="va">ToothGrowth</span>, <span class="va">supp</span>, <span class="va">len</span>, <span class="va">dose</span>, alpha <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Shapiro Test indicates normal distribution in the data"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Variance Test indicates equal variances in the data"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Assumption          Decision</span>
