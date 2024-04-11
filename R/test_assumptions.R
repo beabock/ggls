@@ -29,6 +29,8 @@ test_assumptions <- function(data,
   # require(ggplot2)
   # require(dplyr)
 
+  #
+
     out <- matrix(nrow = 2, ncol = 2)
     colnames(out) <- c("Assumption", "Decision")
 
