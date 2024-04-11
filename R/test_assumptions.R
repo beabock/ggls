@@ -12,8 +12,8 @@
 #' @import magrittr
 #' @import dplyr
 #' @import ggplot2
-#' @import rstatix
-#' @import stats
+#' @importFrom rstatix levene_test shapiro_test
+#' @importFrom stats aov
 #' @export
 #'
 #' @examples test_assumptions(ToothGrowth, supp, len, dose, alpha = 0.01)
