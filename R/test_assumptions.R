@@ -126,4 +126,3 @@ test_assumptions <- function(data,
   }
  return(out)
 }
-
