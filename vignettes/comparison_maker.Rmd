@@ -14,17 +14,17 @@ knitr::opts_chunk$set(
 )
 ```
 
+If you've ever used the `ggpubr` package before, you know that you have to make a list of all the comparisons you're going to make on the plot, which is annoying. This fancy function does all the work for you!
+
+Let's try it out.
+
 ```{r setup, warning = F}
 library(ggls)
 ```
 
-If you've ever used the ggpubr package before, you know that you have to make a list of all the comparisons you're going to make on the plot, which is annoying. This fancy function does all the work for you!
-
-Let's try it out.
-
 ```{r}
-comparison_maker(ToothGrowth, supp)
-
+supps <- comparison_maker(ToothGrowth, supp)
+print(supps)
 ```
 
-Now we have a "comparisons" variable with a list of the comparisons we want. Yay. Now we can plug this in to our ggpubr arguments.
+Now we have a list of the comparisons we want `ggpubr` to make. Yay. Now we can plug this in to our ggpubr functions.

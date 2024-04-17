@@ -1,5 +1,5 @@
 ---
-title: "test_assumptions_vignette"
+title: "test_assumptions"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{test_assumptions_vignette}
@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, warning = FALSE, include = F}
 library(ggls)
 ```
 
@@ -27,7 +27,7 @@ ggls::test_assumptions(ToothGrowth, supp, len)
 
 The output tells you the result.
 
-If you want to change the p-value, you can do that.
+If you want to change the p-value, you can do that, too.
 
 ```{r}
 ggls::test_assumptions(ToothGrowth, supp, len, alpha = 0.01)

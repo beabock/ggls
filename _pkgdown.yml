@@ -12,13 +12,15 @@ navbar:
       - text: Comparison Maker
         href: articles/comparison_maker.html
       - text: Testing Assumptions
-        href: articles/test_assumptions_vignette.html
+        href: articles/test_assumptions.html
 footer:
   structure:
-    left: pkgdown
+    left: 
+    - Note
     right:
     - developed_by
     - legal
   components:
     legal: Provided without **any warranty**.
+    Note: <3
 
