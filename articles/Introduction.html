@@ -73,8 +73,19 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">ggls</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://beabock.github.io/ggls/">ggls</a></span><span class="op">)</span></span>
 <span><span class="co">#Add other packages you'll need here</span></span></code></pre></div>
+<p>The idea of this package is to add letters indicating significance
+above compared bars in barplots. However, that seems hard, so this does
+some other, easier things.</p>
+<p>First, you can use the comparison_maker to create a list which you
+can feed into the ggpubr package. That package requires you to make a
+list of all the comparisons you wish to do, and comparison_maker creates
+the list assuming you want to compare each group to each other
+group.</p>
+<p>Second, you can use the assumption tester to test your dataset for
+the common assumptions of statistical tests, including normal
+distribution and equality of variances.</p>
   </main>
 </div>
 
