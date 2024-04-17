@@ -1,0 +1,1 @@
+{"frames":[{"func":"comparison_maker(ToothGrowth, supp)","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0}],"message":"Error in data %>% dplyr::mutate(x = as.factor({ : \n  could not find function \"%>%\"\n"}

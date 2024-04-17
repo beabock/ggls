@@ -1,0 +1,5 @@
+"0","comparison_maker(ToothGrowth, supp)
+"
+"2","Error in data %>% dplyr::mutate(x = as.factor({ : 
+  could not find function ""%>%""
+"

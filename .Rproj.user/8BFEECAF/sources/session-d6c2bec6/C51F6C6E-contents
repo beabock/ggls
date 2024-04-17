@@ -1,0 +1,21 @@
+---
+title: "Introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The idea of this package is to add letters indicating significance above compared bars in barplots. However, that seems hard, so this does some other, easier things.
+
+First, you can use the comparison_maker to create a list which you can feed into the ggpubr package. That package requires you to make a list of all the comparisons you wish to do, and comparison_maker creates the list assuming you want to compare each group to each other group.
+
+Second, you can use the assumption tester to test your dataset for the common assumptions of statistical tests, including normal distribution and equality of variances.
