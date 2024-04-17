@@ -1,4 +1,24 @@
 url: https://beabock.github.io/ggls/
 template:
   bootstrap: 5
+  bootswatch: quartz
+navbar:
+  components:
+    articles:
+      text: Table of Contents
+      menu:
+      - text: Introduction
+        href: articles/Introduction.html
+      - text: Comparison Maker
+        href: articles/comparison_maker.html
+      - text: Testing Assumptions
+        href: articles/test_assumptions_vignette.html
+footer:
+  structure:
+    left: pkgdown
+    right:
+    - developed_by
+    - legal
+  components:
+    legal: Provided without **any warranty**.
 
