@@ -38,13 +38,13 @@ comparison_maker <- function(data,
 
     } #close the comparisons for loop
 
-    print(comparisons)
+    return(comparisons)
 
     }#close the if comparisons == all loop
 
     else { #if user does not choose "all" for comparisons and instead provides comparisons
 
-    print(comparisons)
+    return(comparisons)
 
      }
 

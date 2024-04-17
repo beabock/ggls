@@ -32,12 +32,25 @@ devtools::install_github("beabock/ggls")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+If you want to use the ggpubr package, you may need to create a list of comparisons for the groups you want to compare. If you want to compare all groups to each other, this command does that.
 
-```{r example}
+```{r example, warning = F}
 library(ggls)
-## basic example code
+
+comparison_maker(ToothGrowth, supp)
 ```
+
+Additionally, if you are using ggpubr, you may want to test the common assumptions of common statistical tests on your dataset. The test_assumptions function does this.
+
+```{r example2}
+
+test_assumptions(ToothGrowth, supp, len)
+
+```
+
+
+
+
 
 
 You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
