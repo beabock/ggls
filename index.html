@@ -41,9 +41,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="articles/comparison_maker.html">comparison_maker</a>
-    <a class="dropdown-item" href="articles/Introduction.html">Introduction</a>
-    <a class="dropdown-item" href="articles/test_assumptions_vignette.html">test_assumptions_vignette</a>
+    <a class="dropdown-item" href="articles/01_Introduction.html">Introduction</a>
+    <a class="dropdown-item" href="articles/02_comparison_maker.html">comparison_maker</a>
+    <a class="dropdown-item" href="articles/03_test_assumptions_vignette.html">test_assumptions_vignette</a>
   </div>
 </li>
       </ul>
@@ -75,14 +75,22 @@
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>This is a basic example which shows you how to solve a common problem:</p>
+<p>If you want to use the ggpubr package, you may need to create a list of comparisons for the groups you want to compare. If you want to compare all groups to each other, this command does that.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">ggls</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'dplyr::lag' by 'stats::lag' when loading</span></span>
-<span><span class="co">#&gt; 'ggls'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'rstatix::filter' by 'stats::filter' when</span></span>
-<span><span class="co">#&gt; loading 'ggls'</span></span>
-<span><span class="co">## basic example code</span></span></code></pre></div>
+<span></span>
+<span><span class="fu"><a href="reference/comparison_maker.html">comparison_maker</a></span><span class="op">(</span><span class="va">ToothGrowth</span>, <span class="va">supp</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [1] "OJ" "VC"</span></span></code></pre></div>
+<p>Additionally, if you are using ggpubr, you may want to test the common assumptions of common statistical tests on your dataset. The test_assumptions function does this.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="reference/test_assumptions.html">test_assumptions</a></span><span class="op">(</span><span class="va">ToothGrowth</span>, <span class="va">supp</span>, <span class="va">len</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "Shapiro Test indicates non-normal distribution in the data"</span></span>
+<span><span class="co">#&gt; [1] "Variance Test indicates equal variances in the data"</span></span>
+<span><span class="co">#&gt;      Assumption          Decision</span></span>
+<span><span class="co">#&gt; [1,] "Shapiro Normality" "Fail"  </span></span>
+<span><span class="co">#&gt; [2,] "Levene Variance"   "Pass"</span></span></code></pre></div>
 <p>You’ll still need to render <code>README.Rmd</code> regularly, to keep <code>README.md</code> up-to-date. <code>devtools::build_readme()</code> is handy for this.</p>
 </div>
 </div>
