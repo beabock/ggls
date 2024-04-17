@@ -1,5 +1,5 @@
 Package: ggls
-Title: ggplot plug in to add Letters of Significance
+Title: ggplot plugin to add Letters of Significance
 Version: 0.0.0.9000
 Authors@R: 
     person("Beatrice", "Bock", , "bmb646@nau.edu", role = c("aut", "cre"),

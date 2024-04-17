@@ -34,7 +34,7 @@ devtools::install_github("beabock/ggls")
 
 If you want to use the ggpubr package, you may need to create a list of comparisons for the groups you want to compare. If you want to compare all groups to each other, this command does that.
 
-```{r example, warning = F}
+```{r example, warning = FALSE, error= FALSE, message= FALSE}
 library(ggls)
 
 comparison_maker(ToothGrowth, supp)
