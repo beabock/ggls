@@ -4,8 +4,8 @@ pkgdown_sha: ~
 articles:
   comparison_maker: comparison_maker.html
   Introduction: Introduction.html
-  test_assumptions_vignette: test_assumptions_vignette.html
-last_built: 2024-04-17T21:18Z
+  test_assumptions: test_assumptions.html
+last_built: 2024-04-17T21:37Z
 urls:
   reference: https://beabock.github.io/ggls/reference
   article: https://beabock.github.io/ggls/articles
