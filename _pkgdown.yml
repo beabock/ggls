@@ -15,11 +15,11 @@ navbar:
         href: articles/test_assumptions.html
 footer:
   structure:
-    left:
-    - Note
+    left: Note
     right:
     - developed_by
     - legal
   components:
     legal: Provided without **any warranty**.
     Note: <3
+
