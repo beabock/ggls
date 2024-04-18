@@ -2,7 +2,7 @@
 title: "test_assumptions"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{test_assumptions_vignette}
+  %\VignetteIndexEntry{test_assumptions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 

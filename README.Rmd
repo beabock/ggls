@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/beabock/ggls/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/beabock/ggls/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of ggls is to add letter indicating the significance of differences of results among treatments displayed in ggplot barplots and boxplots.
+The goal of ggls is to add letter indicating the significance of differences of results among treatments displayed in ggplot barplots and boxplots. It doesn't do that part yet, but it does offer a comparison maker to plug into the ggpubr package as well as a testing assumptions function which tests common assumptions about datasets required by certain statistical tests. 
 
 ## Installation
 
@@ -40,7 +40,7 @@ library(ggls)
 comparison_maker(ToothGrowth, supp)
 ```
 
-Additionally, if you are using ggpubr, you may want to test the common assumptions of common statistical tests on your dataset. The test_assumptions function does this.
+Additionally, you may want to test the common assumptions of common statistical tests on your dataset to know if it's okay to use those tests on your dataset. The test_assumptions function does this.
 
 ```{r example2}
 

@@ -24,12 +24,7 @@ test_assumptions <- function(data,
                              alpha = 0.05,
                              plots = FALSE #Displaying diagnostic plots
                              ){
-
-  # require(magrittr)
-  # require(ggplot2)
-  # require(dplyr)
-
-  #
+  #Think about different types of potential incoming data. Categorical, numeric
 
     out <- matrix(nrow = 2, ncol = 2)
     colnames(out) <- c("Assumption", "Decision")

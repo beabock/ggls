@@ -5,6 +5,7 @@
 #' @param comparisons Default is "all". If you do not want to compare all variables to each other within your grouping column, then you can specify which comparisons you want instead.
 #'
 #' @return comparisons
+#' @import magrittr
 #' @export
 #'
 #' @examples comparison_maker(ToothGrowth, supp)

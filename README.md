@@ -10,7 +10,10 @@
 
 The goal of ggls is to add letter indicating the significance of
 differences of results among treatments displayed in ggplot barplots and
-boxplots.
+boxplots. It doesn’t do that part yet, but it does offer a comparison
+maker to plug into the ggpubr package as well as a testing assumptions
+function which tests common assumptions about datasets required by
+certain statistical tests.
 
 ## Installation
 
@@ -36,9 +39,9 @@ comparison_maker(ToothGrowth, supp)
 #> [1] "OJ" "VC"
 ```
 
-Additionally, if you are using ggpubr, you may want to test the common
-assumptions of common statistical tests on your dataset. The
-test_assumptions function does this.
+Additionally, you may want to test the common assumptions of common
+statistical tests on your dataset to know if it’s okay to use those
+tests on your dataset. The test_assumptions function does this.
 
 ``` r
 
