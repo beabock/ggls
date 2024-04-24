@@ -1,0 +1,427 @@
+
+#This file is for exploratory data analysis for my Dark Web Experiment
+#10 April 2024
+#B. Bock
+
+library(readxl)
+library(readr) #read_csv
+library(stringr) #read strings
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(ggpubr)
+library(multcompView)
+library(forcats)
+library(EnvStats) #For adding sample sizes to plots
+library(car) #leveneTest
+library(rempsyc) #Test model assumptions
+
+theme_set(theme_bw())
+
+
+# Dataset Cleanup -----------------------------------------------------------------
+
+#Biomass + metadata
+ds <- read_excel("C:/Users/beabo/OneDrive/Documents/NAU/Dark Web/Datasets/DWN_Data_2023.xlsx", sheet=2)
+
+
+#Rhizovision root scanning data, whole root segment. Need to add the root segment data.
+rv_4 <- read_csv("C:/Users/beabo/OneDrive/Documents/NAU/Dark Web/Datasets/rhizovision_features_4.csv") %>%
+  mutate(Experiment_Round = "4")%>%
+  filter(File.Name != "14a_add_roots_020.jpg")%>% #Extra roots, duplicate reading messes things up. May want to average this with other 14a later
+  filter(Region.of.Interest == "roi_3")#This is an extra scan, remove from analysis for now because this is the only plant that has two scans for roots
+
+rv_5 <- read_csv("C:/Users/beabo/OneDrive/Documents/NAU/Dark Web/Datasets/rhizovision_features_5.csv") %>%
+  mutate(Experiment_Round = "5")  %>%
+  filter(Region.of.Interest == "roi_3")  %>%
+  filter(File.Name != "2a_roots_034.jpg" & File.Name != "5a_roots_035.jpg" & File.Name != "6a_roots_033.jpg")
+
+rv_full <- full_join(rv_4, rv_5) %>% #Joining the two rv datasets
+  mutate(Box_Nr = str_extract(File.Name, "([0-9]+)"),
+         Chamber = str_extract(File.Name, "([a-z])"))%>%
+  mutate(Chamber = case_when(Chamber == "a" ~ "A",
+                             Chamber == "b" ~ "B"),
+         Experiment_Round = as.numeric(Experiment_Round))%>%
+  mutate(Experiment_Round = case_when(Box_Nr == 3 ~ 2, .default = Experiment_Round))%>%
+  filter(Experiment_Round != 4 | Box_Nr !=5) #Box 5 is scanned for both round 4 and 5, but it is only in round 5. So delete the row where it is listed as part of Round 4.
+
+
+ds_shoots <- ds %>%
+  pivot_longer(cols=c("A_Shoot_Dry_Weight_g","B_Shoot_Dry_Weight_g"), names_to = "Chamber", names_pattern = "(.)_Shoot_Dry_Weight_g", values_to = "Shoot_Dry_Weight_g")%>%
+  select(!starts_with(c("A_","B_")))
+
+ds_roots <- ds %>%
+  pivot_longer(cols=c("A_Root_Dry_Weight_g","B_Root_Dry_Weight_g"), names_to = "Chamber", names_pattern = "(.)_Root_Dry_Weight_g", values_to = "Root_Dry_Weight_g")%>%
+  select(!starts_with(c("A_","B_")))%>%
+  full_join(rv_full, by = c("Experiment_Round", "Box_Nr", "Chamber")) #Join the Root data here with the rest of it
+
+
+
+#Root scanning data are being duplicated in the shoots rows, which we don't want
+combo_ds <- full_join(ds_shoots, ds_roots, by = colnames(ds_shoots[1:(ncol(ds_shoots)-1)]))%>%
+  mutate(Experiment_Round = as.character(Experiment_Round))%>%
+  pivot_longer(cols = c("Shoot_Dry_Weight_g", "Root_Dry_Weight_g"), names_to = "Compartment", values_to = "Dry_Weight_g", names_pattern = "(.*)_Dry_Weight_g") #%>%
+   #filter(Box_Nr != 11 | Experiment_Round != 4)%>% #11 in Round 4 was "experimental" but fungus did not cross barrier
+  # filter(Type_Barrier != "Experimental" | Experiment_Round != 5)  #In round 5, the fungus did not seem to cross the barrier in the experimental  treatment, so we'll remove those here
+
+  # filter(Experiment_Round == 4 | Experiment_Round == 5) #May want to filter by these things later
+
+
+combo_ds[combo_ds$Compartment == "Shoot", 19:76] <- NA #Root scan data need to be de-duped
+
+nit_wghts <- read_excel("C:/Users/beabo/OneDrive/Documents/NAU/Dark Web/Datasets/DWN_Data_2023.xlsx", sheet = 3)
+
+nit <- read_excel("C:/Users/beabo/OneDrive/Documents/NAU/Dark Web/Datasets/Beatrice Bock - CN - 22April2024.xlsx")%>%
+  rename(Sample_Name = Sample)%>%
+  filter(str_detect(Sample_Name, "[0-9/]"),
+         !str_detect(Sample_Name, "IAEA|USGS"))%>%
+  mutate(Sample_Name = case_match(Sample_Name,
+                                 "1.14B.S" ~ "4.14B.S",
+                                 "4.5B.R" ~ "2.5B.R",
+                                 "4.3A.S" ~ "2.3A.S",
+                                 "4.3A.R" ~ "2.3A.R",
+                                 .default = Sample_Name #Computer typo switched this sample name from a 4 to a 1
+))
+
+
+samp_N <- nit_wghts %>%
+  filter(grepl('2|4|5', Sample_Name))%>%
+  filter(!is.na(Sample_Weight_mg))%>%
+  mutate(Sample_Name = case_match(Sample_Name,
+                                  "4.3A.S" ~ "2.3A.S",
+                                  "4.3A.R" ~ "2.3A.R",
+                                  "4.5B.R" ~ "2.5B.R",
+                                  .default = Sample_Name))
+
+pattern <- "([1-9]{1})[- .]([1-9]{2})([A-Z])[- .]([A-Z]{1})"
+
+N_ds <- full_join(samp_N, nit, by = c("Sample_Name"))%>% #Looks great
+  mutate(parts = str_extract_all(Sample_Name, "\\d+|[A-Za-z]+"))%>%
+  unnest_wider(parts, names_sep = ",")%>%
+  rename("Experiment_Round" = "parts,1",
+         "Box_Nr" = "parts,2",
+         "Chamber" = "parts,3",
+         "Compartment" = "parts,4",
+         "Duplicate" = "parts,5")%>%
+  mutate(Compartment = case_match(Compartment,
+                                 "S" ~ "Shoot",
+                              "R" ~ "Root" ))
+
+
+combo_ds2 <- full_join(combo_ds, N_ds, by = c("Experiment_Round", "Box_Nr", "Chamber", "Compartment"))%>% #Need to figure out what to do with the duplicates in the N dataset
+  relocate(c("Sample_Weight_mg", "d15N", "Experiment_Round"))%>%
+  filter(Experiment_Round != 1)%>%#Round 1was just a prelim
+  filter(Box_Nr != "?")%>%
+  filter(Experiment_Round != 4 | Box_Nr != 11) #Fungus did not cross in this one
+
+
+combo_ds2 <- combo_ds2 %>%
+  mutate(d15N = as.numeric(d15N))%>%
+  mutate(r_sample = (d15N/1000 +1)*0.0036765)%>%
+  mutate(atom_pct_tin = (r_sample/(r_sample + 1))*100)%>%
+  mutate(atom_pct_sample = (atom_pct_tin*Total_Weight_mg - (0.3552*Standard_Weight_mg))/Sample_Weight_mg  )%>%
+  mutate(N15_content_sample = atom_pct_sample*Total_Weight_mg)%>%
+  relocate(c("Compartment", "Chamber", "d15N", "r_sample", "atom_pct_sample"))
+
+
+#0.3552 %15N in USGS25
+#0.3552*wght USGS + x*wght sample =
+
+#5 12 and 5 15 are being weird
+
+#(%15N USGS25 )(mg USGS25)+(sample weight)(sample %15N) = sample atom pct
+
+#(Sample atom pct - 15nusgs*wghtUSGS)/samplewght
+
+
+combo_ds2%>%
+ # filter(!is.na(Type_Barrier))%>%
+#  filter(Experiment_Round == 5 | Experiment_Round ==4)%>%
+  group_by(Type_Barrier, Chamber)%>%
+  summarize(mean = mean(as.numeric(test), na.rm=T)) #Seems like it's working!
+
+  combo_ds2%>%
+    #filter(Experiment_Round != 5 | Type_Barrier != "Experimental")%>%
+    #filter(Chamber == "B")%>%
+ggplot(aes(x= Type_Barrier, y= atom_pct_sample, fill = Compartment))+
+  geom_boxplot()+
+    stat_n_text()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+    facet_grid(~Chamber)
+
+
+#Ok so now I need to get the atom percent of USGS25
+
+#Air atom 15N% (reference)
+#d15N (parts per mill) =[(Rsample - Rstandard)]x1000
+#R is the ratio of15N/14N (atom %)
+
+#(d15N/1000)+0.3663 = Rsample
+#Rsample = -30.41(mass of USGS25) + x(mass of sample) / total mass of tin?
+
+#(Rsample - (-30.41*mass of usgs25))/mass of sample = x (atom% sample)
+
+  #donor vs recipient
+
+ds_wide <- combo_ds2 %>%
+  filter(is.na(Duplicate))%>% #Maybe come back to the duplicates and un-remove them
+  pivot_wider(names_from = c("Chamber","Compartment"), values_from = c("Dry_Weight_g", "Sample_Weight_mg", "Standard_Weight_mg", "%N", "d15N", "r_sample", "atom_pct_sample", "atom_pct_tin", "N15_content_sample"), id_cols = c("Experiment_Round", "Type_Barrier", "Box_Nr"))%>%
+  mutate(A_Weight = Dry_Weight_g_A_Shoot + Dry_Weight_g_A_Root,
+         B_Weight = Dry_Weight_g_B_Shoot + Dry_Weight_g_B_Root,
+         Box_Weight = A_Weight + B_Weight,
+         N15_content_sample)
+
+
+# Plotting ----------------------------------------------------------------
+
+
+my_comparisons <- list( c("Barrierless", "Experimental"), c("Experimental", "Impermeable"), c("Experimental", "Sterile"))#Need to add to this
+
+#Best plot so far
+combo_ds %>%
+  #filter(Chamber == "B")%>%
+  group_by(Experiment_Round, Type_Barrier, Box_Nr, Chamber)%>%
+  summarize(Plant_Weight_g = Dry_Weight_g[Compartment == "Root"]+
+            Dry_Weight_g[Compartment == "Shoot"])%>%
+  filter(!(Type_Barrier %in% c("Diffusion1", "Diffusion2", "Diffusion3", "Oyster")))%>% #Remove most control treatments for this plot
+  ggplot(aes(x= Type_Barrier,
+             y = Plant_Weight_g,
+             fill = Chamber
+             ))+
+  geom_boxplot()+
+ # facet_grid(rows = vars(Compartment))+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+  scale_color_manual(values = c("#5785C1", "#FBA72A"))+
+  stat_n_text()+
+  geom_jitter(aes(color = Chamber))+
+  stat_compare_means(aes(label = after_stat(p.signif)),
+   # ref.group = "Sterile"
+    #facet.by = "Chamber",
+                     comparisons = my_comparisons
+                     )
+
+#let's do a bar plot where shoots are above the 0 line, roots are below. Kind of hard to look at. Maybe don't look at this again.
+combo_ds %>%
+  group_by(Experiment_Round, Type_Barrier, Box_Nr, Chamber)%>%
+  summarize(Roots = -mean(Dry_Weight_g[Compartment == "Root"], na.rm = T),
+            Shoots = mean(Dry_Weight_g[Compartment == "Shoot"], na.rm = T))%>%
+  ggplot(aes(x = Type_Barrier, fill = Chamber))+
+  geom_col(aes(y = Roots),
+         #  fill = "#5785C1",
+           position = "dodge")+
+  geom_col(aes(y = Shoots),
+         #  fill =  c("brown", "grey"),
+           position = "dodge")+
+  geom_hline(yintercept=0)+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+  labs(y = "Weight (g)")
+
+#root to shoot ratio plot. Not interesting really.
+combo_ds %>%
+  group_by(Experiment_Round, Type_Barrier, Box_Nr, Chamber)%>%
+  summarize(root_to_shoot = Dry_Weight_g[Compartment == "Root"]/Dry_Weight_g[Compartment == "Shoot"])%>% #Making the root to shoot ratio here
+  ggplot(aes(x= Type_Barrier, y = root_to_shoot, fill = Chamber))+
+  geom_boxplot()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))
+
+
+
+totals <-  combo_ds %>%
+  group_by(Experiment_Round, Type_Barrier, Box_Nr, Chamber)%>%
+  summarize(Plant_Weight_g = Dry_Weight_g[Compartment == "Root"]+
+              Dry_Weight_g[Compartment == "Shoot"])
+
+st <- compare_means(
+  Plant_Weight_g ~ Type_Barrier, #group.by = "Chamber",
+  method = "t.test", data = totals)
+
+#Root avg diameter is bigger without the fungus, probably because the whole root system is just the seed
+combo_ds %>%
+  ggplot(aes(x = Type_Barrier, y = Average.Diameter.mm, fill = Chamber))+
+  geom_boxplot()+
+  stat_n_text()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))
+
+#Root tips, intresting
+combo_ds %>%
+  filter(!is.na(Type_Barrier))%>% #Need to figure out why one of the barriers is NA, that's weird
+  ggplot(aes(x = Type_Barrier, y = Number.of.Root.Tips, fill = Chamber))+
+  geom_boxplot()+
+  stat_n_text()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))
+
+#Branch points
+combo_ds %>%
+  filter(!is.na(Type_Barrier))%>% #Need to figure out why one of the barriers is NA, that's weird
+  ggplot(aes(x = Type_Barrier, y = Number.of.Branch.Points, fill = Chamber))+
+  geom_boxplot()+
+  stat_n_text()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))
+
+#Total Root length. Basically the ones without fungus are really small. Curious about the barrierless ones. Interesting that oyster had root length, and that two of the diffusions do too.
+combo_ds %>%
+  filter(!is.na(Type_Barrier))%>% #Need to figure out why one of the barriers is NA, that's weird
+  ggplot(aes(x = Type_Barrier, y = Total.Root.Length.mm, fill = Chamber))+
+  geom_boxplot()+
+  stat_n_text()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))
+
+#Branching freq. Kind of interesting
+combo_ds %>%
+  filter(!is.na(Type_Barrier))%>% #Need to figure out why one of the barriers is NA, that's weird
+  ggplot(aes(x = Type_Barrier, y = Branching.frequency.per.mm, fill = Chamber))+
+  geom_boxplot()+
+  stat_n_text()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))
+
+#Surface area. Good for showing diffs between roots when have fungus vs. not.
+combo_ds %>%
+  filter(!is.na(Type_Barrier))%>% #Need to figure out why one of the barriers is NA, that's weird
+  ggplot(aes(x = Type_Barrier, y = Surface.Area.mm2, fill = Chamber))+
+  geom_boxplot()+
+  stat_n_text()+
+  geom_jitter(aes(color = Chamber))+
+  scale_color_manual(values = c("#5785C1", "#FBA72A"))+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))
+
+#Look at how the root lengths change by diameter class for diff treatments. Somewhat interesting.
+combo_ds %>%
+  pivot_longer(cols = starts_with("Root.Length.Diameter.Range"), values_to = "Root.Length", names_to = "Diameter.Range")%>%
+  filter(Diameter.Range != "Root.Length.Diameter.Range.6.mm")%>%
+  ggplot(aes(x = Type_Barrier, y = Root.Length, fill = Chamber))+
+  geom_boxplot()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+  facet_wrap(~Diameter.Range, nrow = 6, scales = "free")
+
+#Look at how the projected area change by diameter class for diff treatments. Not very interesting.
+combo_ds %>%
+  pivot_longer(cols = starts_with("Projected.Area.Diameter.Range"), values_to = "Projected.Area", names_to = "Diameter.Range")%>%
+  filter(Diameter.Range != "Projected.Area.Diameter.Range.6.mm2")%>%
+  ggplot(aes(x = Type_Barrier, y = Projected.Area, fill = Chamber))+
+  geom_boxplot()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+  facet_wrap(~Diameter.Range, nrow = 6, scales = "free")
+
+#Look at how the surface areas change by diameter class for diff treatments. Not very interesting.
+combo_ds %>%
+  pivot_longer(cols = starts_with("Surface.Area.Diameter.Range"), values_to = "Surface.Area", names_to = "Diameter.Range")%>%
+  filter(Diameter.Range != "Surface.Area.Diameter.Range.6.mm2")%>%
+  ggplot(aes(x = Type_Barrier, y = Surface.Area, fill = Chamber))+
+  geom_boxplot()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+  facet_wrap(~Diameter.Range, nrow = 6, scales = "free")
+
+#Look at how the volumes change by diameter class for diff treatments. Not very interesting.
+combo_ds %>%
+  pivot_longer(cols = starts_with("Volume.Diameter.Range"), values_to = "Volume.Area", names_to = "Diameter.Range")%>%
+  filter(Diameter.Range != "Volume.Diameter.Range.6.mm3")%>%
+  ggplot(aes(x = Type_Barrier, y = Volume.Area, fill = Chamber))+
+  geom_boxplot()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+  facet_wrap(~Diameter.Range, nrow = 6, scales = "free")
+
+
+combo_ds %>%
+  filter(!is.na(Type_Barrier))%>%
+  ggplot(aes(x = Type_Barrier, y = Dry_Weight_g, fill = Chamber))+
+  geom_boxplot()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+  facet_grid(~Compartment)
+
+
+combo_ds %>%
+  filter(!is.na(Type_Barrier))%>% #Need to figure out why one of the barriers is NA, that's weird
+  ggplot(aes(x = Type_Barrier, y = Depth.mm, fill = Chamber))+
+  geom_boxplot()+
+  stat_n_text()+
+  geom_jitter(aes(color = Chamber))+
+  scale_color_manual(values = c("#5785C1", "#FBA72A"))+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))
+
+# Stats -------------------------------------------------------------------
+
+#Now doing the actual stats aside from the plots.
+
+#Check assumptions first
+
+#Normality
+shapiro.test(ds_wide$Box_Weight) #Good
+ggdensity(ds_wide$Box_Weight)
+ggqqplot(ds_wide$Box_Weight) #Good
+
+#Total box weights pass normality test
+
+
+#Now let's approach the equality of variances assumption
+
+leveneTest(Dry_Weight_g ~ Type_Barrier*Chamber*Compartment, combo_ds)
+#Equal variances when we account for type of barrier, chamber, and compartment (root or shoot)
+
+leveneTest(Box_Weight ~ Type_Barrier, ds_wide)
+#Equal variances here too
+
+#Look at normality when chamber and all of that is taken into account, use wide dataset for this
+
+nice_table(nice_assumptions(lm(Box_Weight ~ Type_Barrier, ds_wide))
+) #Box weights have issues with autocorrelation
+nice_table(nice_assumptions(lm(A_Root ~ Type_Barrier, ds_wide))
+)
+nice_table(nice_assumptions(lm(A_Shoot ~ Type_Barrier, ds_wide))
+)
+nice_table(nice_assumptions(lm(B_Root ~ Type_Barrier, ds_wide))
+) #B chambers have problems with normality and autocorrelation
+nice_table(nice_assumptions(lm(B_Shoot ~ Type_Barrier+Experiment_Round, ds_wide))
+) #B chambers have problems with normality
+
+#Normality and equal variances tests passed. Woohoo. Now we can move onto analyses.
+
+anova(lm(Box_Weight ~ Type_Barrier, ds_wide))
+
+#Maybe group the treatments where B does not get fungus and compare to when it does have
+
+TukeyHSD(aov(B_Weight ~ Type_Barrier, ds_wide))
+#B weights:
+#All diffusion treatments significantly different from barrierless
+#Experimental sig diff from barrierless
+#Impermeable and oyster and steerile sig diff from barrierless
+#Diffusion treats not sig diff from each other
+#Experimental and impermeable and oyster and sterile not sig diff than diffusion 1 or 2  or 3
+#
+
+TukeyHSD(aov(Box_Weight ~ Type_Barrier, ds_wide))
+#Box weights:
+#Barrierless sig diff from everything other than diffusion2
+#Diffusion 1 not sig diff from anything
+#Diff 2 sig diff from oyster and sterile but nothing else
+#Diff 3 not sig dif from anything
+#Experimental not sig diff from
+
+
+check_model(lm(Dry_Weight_g ~ factor(Compartment)* factor(Chamber) * factor(Type_Barrier), combo_ds))
+
+#Good for seeing the differences in weights among treatments
+ggplot(combo_ds, aes(x = Type_Barrier, y = Dry_Weight_g, fill = Chamber))+
+  geom_boxplot()+
+  facet_grid(Experiment_Round~Compartment)+
+#  facet_grid(~Experiment_Round)+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+  stat_n_text()
+
+ggplot(combo_ds, aes(x = Type_Barrier, y = Dry_Weight_g, fill = Chamber))+
+  geom_boxplot()+
+  scale_fill_manual(values = c("#5785C1", "#FBA72A"))+
+  stat_n_text()
+
+
+
+my_comparisons <- list( c("Barrierless", "Experimental"), c("Experimental", "Impermeable"), c("Experimental", "Sterile"))#Need to add to this
+
+#B weights seem like the best metric for looking at biomass weights. A Weights show how having the fungus evens out everything. In B, several things are significant
+ggplot(ds_wide, aes(x = Type_Barrier, y= B_Weight))+
+  geom_boxplot(fill = "#5785C1")+
+  stat_compare_means(aes(label = after_stat(p.signif)),
+                     # ref.group = "Sterile"
+                     #facet.by = "Chamber",
+                     comparisons = my_comparisons
+  )+
+  stat_n_text()
