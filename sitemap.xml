@@ -4,19 +4,13 @@
     <loc>https://beabock.github.io/ggls/404.html</loc>
   </url>
   <url>
-    <loc>https://beabock.github.io/ggls/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://beabock.github.io/ggls/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://beabock.github.io/ggls/articles/Introduction.html</loc>
-  </url>
-  <url>
     <loc>https://beabock.github.io/ggls/articles/comparison_maker.html</loc>
   </url>
   <url>
     <loc>https://beabock.github.io/ggls/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>https://beabock.github.io/ggls/articles/Introduction.html</loc>
   </url>
   <url>
     <loc>https://beabock.github.io/ggls/articles/test_assumptions.html</loc>
@@ -26,6 +20,12 @@
   </url>
   <url>
     <loc>https://beabock.github.io/ggls/index.html</loc>
+  </url>
+  <url>
+    <loc>https://beabock.github.io/ggls/LICENSE-text.html</loc>
+  </url>
+  <url>
+    <loc>https://beabock.github.io/ggls/LICENSE.html</loc>
   </url>
   <url>
     <loc>https://beabock.github.io/ggls/reference/comparison_maker.html</loc>
